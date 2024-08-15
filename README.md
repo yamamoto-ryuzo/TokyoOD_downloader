@@ -4,7 +4,7 @@
 　https://github.com/yamamoto-ryuzo/PostgREST-installation-Japanese-memo/blob/main/使用方法.md  
 
 ## 仕様  
-　・Pythonを設置したフォルダ以下へのアクセス権および作業領域・データ保持が可能であること  
-　・EPSGコード不明はいったんEPSG：****で処理 
-　・位置情報属性は緯度・経度に統一
-　・文字コードは　UTF-8　に統一
+　・Pythonを設置したフォルダ以下へのアクセス権および作業領域・データ保持が可能であること    
+　・EPSGコード不明はいったんEPSG：****で処理   
+　・位置情報属性は緯度・経度に統一  
+　・文字コードは　UTF-8　に統一   
