@@ -15,11 +15,18 @@
 以下を同じフォルダに設置してください。  
 　　本体：TokyoOD_downloder.exe  
 　　設定ファイル：config.txt  
-  　　　
 作成されるフォルダ  
 　　ダウンロードする予定のURL一覧：./download/dataURLList.csv  
-　　ダウンロードしたデータ本体：./dowqnload/data  
+　　ダウンロードしたデータ本体：./dowqnload/data 
+　　※注意　毎回起動時に自動削除します。
+## 設定ファイル：config.txt  
+title=title:トイレ  
+　↑「title:検索対象」データセットタイトルで検索  
+　↑「検索対処」全項目検索と思われます  
+format=csv  
+　↑当面このままで！  
 ## 出力サンプル
 ダウンロードする予定のURL一覧：./download/dataURLList.csv
-
+![image](https://github.com/user-attachments/assets/a012f566-d355-4aea-88b9-3fdceaec13ed)
 ダウンロードしたデータ本体：./dowqnload/data  
+![image](https://github.com/user-attachments/assets/8f9b572f-86dc-41ef-9ee1-fc9149c32b15)
