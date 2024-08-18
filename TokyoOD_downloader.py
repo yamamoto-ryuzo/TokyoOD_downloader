@@ -179,7 +179,7 @@ try:
         print(df)
 
     ######## データアドレスを必要な属性のみ保存 #########
-    columns_to_select = ['データセットID','データURL']
+    columns_to_select = ['データセットID','データURL','データセットタイトル']
     file_path="./download/dataURLList.csv"
     download_DataURL(df,columns_to_select,file_path)  
 
@@ -214,7 +214,7 @@ try:
                     file.write(response.content)
                 print(f"--------------------------ダウンロード完了: {download_dir+file_name}")
 
-                ######## Shift-JIS確認 #########
+                ######## エンコードの確認 #########
                 # バイナリモードでファイルを開く
                 with open(f'{download_dir+file_name}', 'rb') as f:
                     # ファイルの内容を読み込む
@@ -224,38 +224,19 @@ try:
                     # 判定結果を表示
                     print(f"Encoding: {result['encoding']}, Confidence: {result['confidence']}")
 
-                ######## Shift-JISの場合UTF-8に変換 #########
-                if result['encoding'] == 'SHIFT_JIS':
-                    # Shift-JISで読み込み、UTF-8で書き出す
-                    with open(f'{download_dir+file_name}', 'r', encoding='SHIFT_JIS') as f:
+                ######## result['encoding']がNone以外はUTF-8に変換 #########
+                if result['encoding'] != 'None':
+                    with open(f'{download_dir+file_name}', 'r', encoding=result['encoding'],errors='replace') as f:
                         text = f.read()
                     with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
                         f.write(text)
                     print(f"{download_dir+file_name}をUTF-8に変換しました。")
-                ######## UTF-8-SIG(BOM付き)の場合UTF-8に変換 #########
-                if result['encoding'] == 'UTF-8-SIG':
-                    # Shift-JISで読み込み、UTF-8で書き出す
-                    with open(f'{download_dir+file_name}', 'r', encoding='UTF-8-SIG') as f:
+                else:
+                    with open(f'{download_dir+file_name}', 'r', encoding='None',errors='replace') as f:
                         text = f.read()
                     with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
                         f.write(text)
-                    print(f"{download_dir+file_name}をUTF-8に変換しました。")
-                ######## utf-8の場合UTF-8に変換 #########
-                if result['encoding'] == 'utf-8':
-                    # Shift-JISで読み込み、UTF-8で書き出す
-                    with open(f'{download_dir+file_name}', 'r', encoding='utf-8') as f:
-                        text = f.read()
-                    with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
-                        f.write(text)
-                    print(f"{download_dir+file_name}をUTF-8に変換しました。")
-                ######## CP932の場合UTF-8に変換 #########
-                if result['encoding'] == 'CP932':
-                    # CP932で読み込み、UTF-8で書き出す
-                    with open(f'{download_dir+file_name}', 'r', encoding='CP932') as f:
-                        text = f.read()
-                    with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
-                        f.write(text)
-                    print(f"{download_dir+file_name}をUTF-8に変換しました。")
+                    print(f"{download_dir+file_name}をUTF-8に変換しました。")                   
 
                 ######## 緯度列の確認 #########
                 # UTF-8で再度CSVを読み込む
