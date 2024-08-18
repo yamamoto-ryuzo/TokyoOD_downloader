@@ -28,6 +28,7 @@ import requests
 import chardet
 import io
 from charset_normalizer import detect
+from shapely.geometry import Point
 
 ###########################################
 ######## 自作関数ファイルを読み込み #########
@@ -272,11 +273,41 @@ try:
                     print(f" {file_name} :位置情報がありません。")
                 force_rename(f'{download_dir+file_name}', new_file_name)
                 print(f"ファイル名を変更しました: {file_name} -> {new_file_name}")
-
             except requests.exceptions.RequestException as e:
                 print(f"{url}のダウンロードに失敗しました: {e}")
     else:
         print(f"ファイルが見つかりません: {file_path}")
+
+    ######## すべてのファイルをマージする #########
+    # マージするCSVファイルを格納するリスト
+    csv_files = []
+    
+    # ディレクトリ内のファイルを取得
+    for filename in os.listdir(directory_path):
+        if filename.startswith('GIS_') and filename.endswith('.csv'):
+            csv_files.append(os.path.join(directory_path, filename))
+
+    # CSVファイルを読み込み、データフレームをリストに追加
+    dataframes = [pd.read_csv(csv_file, low_memory=False) for csv_file in csv_files]
+
+    # データフレームをマージ
+    merged_df = pd.concat(dataframes, ignore_index=True)
+
+    # マージしたデータをCSVファイルとして保存
+    merged_csv_path = "./GIS_merge_csv.csv"
+    merged_df.to_csv(merged_csv_path, index=False)
+
+    merged_df['geometry'] = merged_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
+
+    # GeoDataFrameに変換
+    gdf = gpd.GeoDataFrame(merged_df, geometry='geometry')
+
+    # GPKGファイルとして保存
+    gpkg_path = "./GIS_merge.gpkg"
+    gdf.to_file(gpkg_path, driver='GPKG')
+
+    print(f'Merged CSV saved to {merged_csv_path}')
+    print(f'GPKG file saved to {gpkg_path}')
 
 # エラー処理
 except FileNotFoundError:
