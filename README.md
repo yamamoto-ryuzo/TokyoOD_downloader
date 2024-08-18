@@ -4,11 +4,9 @@
 　https://github.com/yamamoto-ryuzo/PostgREST-installation-Japanese-memo/blob/main/使用方法.md  
 
 ## 仕様
-　・対応ファイル形式
- 　　　CSV
-　・文字コードは　UTF-8　に統一 
-　・CSVデータをダウンロードした場合、座標値を含むものとそうでないものも仕分け
- 　　　　座標値あり：GIS_元のファイル名
-     　　座標値なし：NON_元のファイル名
-       
-
+　・対応ファイル形式  
+ 　　　CSV  
+　・文字コードは　UTF-8　に統一   
+　・CSVデータをダウンロードした場合、座標値を含むものとそうでないものも仕分け  
+　　　　　座標値あり：GIS_元のファイル名  
+　　　　　座標値なし：NON_元のファイル名  
