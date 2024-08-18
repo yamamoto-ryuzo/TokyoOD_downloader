@@ -1,0 +1,14 @@
+# インストール
+python本体
+https://www.python.org/downloads/
+インストール時【Add python.exe to PATH】にチェックを入れる
+実行に必要なその他のモジュールを環境にインストールの事
+
+pip install pyinstaller
+
+# アップデートがあるとき
+python.exe -m pip install --upgrade pip
+
+#　ディレクトリは適宜変更
+cd C:\Users\ryu\マイドライブ（yamamoto.ryuzou@gmail.com）\github\TokyoOD_downloader
+pyinstaller TokyoOD_downloader.py --onefile --noconsole --distpath ./

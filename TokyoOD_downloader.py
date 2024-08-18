@@ -138,16 +138,44 @@ https://catalog.data.metro.tokyo.lg.jp/dataset?q=title:トイレ一覧+AND+res_d
 """
 
 try:
+    ######## ダウンロードフォルダの作成 #########
+    # ディレクトリのパスを指定
+    directory_path = './download/data'
+    # ディレクトリが存在する場合に削除
+    try:
+        if os.path.exists(directory_path):
+            shutil.rmtree(directory_path)
+    except Exception as e:
+        print(f"ディレクトリの削除中にエラーが発生しました: {e}")
+    # ディレクトリが存在しない場合に作成
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+
     ######## データアドレス一覧取得 #########
     url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
     # データセットタイトル
-    title = "title:トイレ"
+
+    # config.txtファイルを読み込みモードで開き変数を読み込む
+    # title = "title:トイレ"
+    # format = "csv"
+    # 設定を格納するための空の辞書を初期化
+    config = {}
+    with open('./config.txt', 'r', encoding='UTF-8') as f:
+        # ファイル内の各行を読み込む
+        for line in f:
+            # 空白を削除し、行をキーと値に分割
+            key, value = line.strip().split('=')
+            # 辞書にキーと値のペアを追加
+            config[key] = value
+    title = config['title']
+    format = config['format']
+    print(f"title: {title}")
+    print(f"format: {format}")
     q = title
-    format = "csv"
     df = fetch_data_from_url(url, q, format)
 
-    #if df is not None:
-    #    print(df)
+    if df is not None:
+        print(df)
 
     ######## データアドレスを必要な属性のみ保存 #########
     columns_to_select = ['データセットID','データURL']
