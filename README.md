@@ -15,6 +15,11 @@
 以下を同じフォルダに設置してください。  
 　　本体：TokyoOD_downloder.exe  
 　　設定ファイル：config.txt  
+  　　　
 作成されるフォルダ  
 　　ダウンロードする予定のURL一覧：./download/dataURLList.csv  
 　　ダウンロードしたデータ本体：./dowqnload/data  
+## 出力サンプル
+ダウンロードする予定のURL一覧：./download/dataURLList.csv
+
+ダウンロードしたデータ本体：./dowqnload/data  
