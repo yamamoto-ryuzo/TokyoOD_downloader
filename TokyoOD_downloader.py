@@ -141,9 +141,7 @@ try:
     ######## データアドレス一覧取得 #########
     url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
     # データセットタイトル
-    title = "title:トイレ一覧"
-    # データセット説明文
-    res_description = "res_description:トイレ"
+    title = "title:トイレ"
     q = title
     format = "csv"
     df = fetch_data_from_url(url, q, format)
@@ -185,7 +183,7 @@ try:
                 file_name = url.split('/')[-1]  # URLの最後の部分をファイル名として使用
                 with open(f'{download_dir+file_name}', 'wb') as file:
                     file.write(response.content)
-                print(f"ダウンロード完了: {download_dir+file_name}")
+                print(f"--------------------------ダウンロード完了: {download_dir+file_name}")
 
                 ######## Shift-JIS確認 #########
                 # バイナリモードでファイルを開く
@@ -200,7 +198,7 @@ try:
                 ######## Shift-JISの場合UTF-8に変換 #########
                 if result['encoding'] == 'SHIFT_JIS':
                     # Shift-JISで読み込み、UTF-8で書き出す
-                    with open(f'{download_dir+file_name}', 'r', encoding='shift_jis') as f:
+                    with open(f'{download_dir+file_name}', 'r', encoding='SHIFT_JIS') as f:
                         text = f.read()
                     with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
                         f.write(text)
@@ -213,19 +211,39 @@ try:
                     with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
                         f.write(text)
                     print(f"{download_dir+file_name}をUTF-8に変換しました。")
+                ######## utf-8の場合UTF-8に変換 #########
+                if result['encoding'] == 'utf-8':
+                    # Shift-JISで読み込み、UTF-8で書き出す
+                    with open(f'{download_dir+file_name}', 'r', encoding='utf-8') as f:
+                        text = f.read()
+                    with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
+                        f.write(text)
+                    print(f"{download_dir+file_name}をUTF-8に変換しました。")
+                ######## CP932の場合UTF-8に変換 #########
+                if result['encoding'] == 'CP932':
+                    # CP932で読み込み、UTF-8で書き出す
+                    with open(f'{download_dir+file_name}', 'r', encoding='CP932') as f:
+                        text = f.read()
+                    with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
+                        f.write(text)
+                    print(f"{download_dir+file_name}をUTF-8に変換しました。")
+
                 ######## 緯度列の確認 #########
                 # UTF-8で再度CSVを読み込む
-                    data = pd.read_csv(f'{download_dir+file_name}', encoding='UTF-8')
-                    if '緯度' in data.columns:
-                        # ファイル名の先頭にGIS_を付け加える
-                        new_file_name = os.path.join(download_dir, f"GIS_{file_name}")
-                        print(f" {file_name} :位置情報があります。")
-                    else:
-                        # ファイル名の先頭にNON_を付け加える
-                        new_file_name = os.path.join(download_dir, f"NON_{file_name}")
-                        print(f" {file_name} :位置情報がありません。")
-                    force_rename(f'{download_dir+file_name}', new_file_name)
-                    print(f"ファイル名を変更しました: {file_name} -> {new_file_name}")
+                file_path = os.path.join(download_dir, file_name)
+                # エラーを無視する！　CSVなのに中身がCSV出ないデータあり！
+                # 後日　ファイル名にエラー表示をするように修正予定
+                data = pd.read_csv(file_path, encoding='UTF-8', on_bad_lines='skip')
+                if '緯度' in data.columns or '"緯度"' in data.columns:
+                    # ファイル名の先頭にGIS_を付け加える
+                    new_file_name = os.path.join(download_dir, f"GIS_{file_name}")
+                    print(f" {file_name} :位置情報があります。")
+                else:
+                    # ファイル名の先頭にNON_を付け加える
+                    new_file_name = os.path.join(download_dir, f"NON_{file_name}")
+                    print(f" {file_name} :位置情報がありません。")
+                force_rename(f'{download_dir+file_name}', new_file_name)
+                print(f"ファイル名を変更しました: {file_name} -> {new_file_name}")
 
             except requests.exceptions.RequestException as e:
                 print(f"{url}のダウンロードに失敗しました: {e}")
