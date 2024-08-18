@@ -10,3 +10,11 @@
 　・CSVデータをダウンロードした場合、座標値を含むものとそうでないものも仕分け  
 　　　　　座標値あり：GIS_元のファイル名  
 　　　　　座標値なし：NON_元のファイル名  
+
+## 利用方法
+以下を同じフォルダに設置してください。  
+　　本体：TokyoOD_downloder.exe  
+　　設定ファイル：config.txt  
+作成されるフォルダ  
+　　ダウンロードする予定のURL一覧：./download/dataURLList.csv  
+　　ダウンロードしたデータ本体：./dowqnload/data  
