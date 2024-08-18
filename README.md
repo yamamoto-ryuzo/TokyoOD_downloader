@@ -27,7 +27,11 @@ title=title:トイレ
 format=csv  
 　↑当面このままで！  
 ## 出力サンプル
-ダウンロードする予定のURL一覧：./download/dataURLList.csv
-![image](https://github.com/user-attachments/assets/a012f566-d355-4aea-88b9-3fdceaec13ed)
-ダウンロードしたデータ本体：./dowqnload/data  
-![image](https://github.com/user-attachments/assets/8f9b572f-86dc-41ef-9ee1-fc9149c32b15)
+#### マージデータ：  
+　ルートフォルダにマージファイルは作成されます  
+　作成されるファイルはGISデータをもつCSVファイル、GPKGファイル    
+ ![image](https://github.com/user-attachments/assets/d4492a6c-235a-4b7b-8afd-80cac6fee418)  
+#### ダウンロードする予定のURL一覧：./download/dataURLList.csv  
+![image](https://github.com/user-attachments/assets/a012f566-d355-4aea-88b9-3fdceaec13ed)  
+#### ダウンロードしたデータ本体：./dowqnload/data    
+![image](https://github.com/user-attachments/assets/8f9b572f-86dc-41ef-9ee1-fc9149c32b15)  
