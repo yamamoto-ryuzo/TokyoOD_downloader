@@ -300,7 +300,7 @@ try:
     merged_df['geometry'] = merged_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
 
     # GeoDataFrameに変換
-    gdf = gpd.GeoDataFrame(merged_df, geometry='geometry')
+    gdf = gpd.GeoDataFrame(merged_df, geometry='geometry',crs='EPSG:4326')
 
     # GPKGファイルとして保存
     gpkg_path = "./GIS_merge.gpkg"
