@@ -17,10 +17,66 @@ import geopandas as gpd
 import json
 import fiona
 
+import io
+from charset_normalizer import detect
+
 ###########################
 ######### 関数定義 #########
 ###########################
+# ---------------------------------------------TokyoODの関数----------------------------------------------
 
+#import requests
+#import pandas as pd
+#import io
+#from charset_normalizer import detect
+def fetch_data_from_url(url, q, format):
+    """
+    指定されたURLに対してPOSTリクエストを送り、CSVデータを取得してDataFrameとして返す関数。
+
+    Parameters:
+    url (str): データを取得するためのURL。
+    q (str): 検索クエリ。
+    format (str): データのフォーマット（例: 'CSV'）。
+
+    Returns:
+    pd.DataFrame: 取得したデータを含むDataFrame。取得に失敗した場合はNoneを返す。
+    """
+    # POSTリクエスト用のデータを構築
+    post_data = {
+        "q": q,
+        "search_url_params": f"res_format={format}"
+    }
+
+    # POSTリクエストを送信してファイルをダウンロード
+    response = requests.post(url, data=post_data)
+
+    # ステータスコードをチェック（200は成功を意味する）
+    if response.status_code == 200:
+        # レスポンスの内容を表示
+        print(response.text)
+        
+        # エンコーディングの種類を確認
+        detected_encoding = detect(response.content)
+        
+        # 自動判定では中国語と間違われる可能性があるので、明示的に指定
+        response.encoding = "utf-8"
+        
+        # データをDataFrameとして読み込む
+        df = pd.read_csv(io.BytesIO(response.content), encoding=response.encoding)
+        return df
+    else:
+        print(f"Failed to retrieve data. Status code: {response.status_code}")
+        return None
+# 使用例
+#url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
+#q = "トイレ"
+#format = "CSV"
+#
+#df = fetch_data_from_url(url, q, format)
+#if df is not None:
+#    print(df)
+
+# ----------------------------------------------GIF時代の関数----------------------------------------------
 ###フォルダのクリーニング
 #work_folder_path = 'work'
 #clean_work_folder(work_folder_path)
