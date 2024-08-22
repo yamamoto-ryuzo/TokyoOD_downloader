@@ -26,7 +26,7 @@
 organization:t131105 title:トイレ  
 　　　↑目黒区のコード　 　↑「title:検索対象」データセットタイトルで検索  
 datatype=csv  
-      ↑マージとかはCSVしか対応していません、ダウンロードだけならOKです！（今のところ）
+      ↑マージとかはCSVしか対応していません、ダウンロードだけなら他の形式もそれなりにエラー出しながらOKです！（たぶん。。。）
 ![image](https://github.com/user-attachments/assets/1c0471c7-5078-4708-a961-07ee8a764730)
 
 ## 出力サンプル
