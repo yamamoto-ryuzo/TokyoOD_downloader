@@ -1,24 +1,23 @@
-"""
-【仮想環境】
-VS Codeの設定で、Pythonインタープリタが正しく設定されているか確認してください。
-コマンドパレット（Ctrl + Shift + P）を開き
-「Python: Select Interpreter」を選択し、正しいPython環境を選択します。
-
-1.PowerShellを管理者権限で実行
-2.現在の実行ポリシーを確認
-    Get-ExecutionPolicy
-3.実行ポリシーを変更
-    Set-ExecutionPolicy RemoteSigned
-4.仮想環境にもどって、アクティブ化
-5.仮想環境のアクティベーション
-    .\.venv\Scripts\activate
-
-【仮想環境へインストールモジュール】
-pip install geopandas requests fiona chardet
-
-【履歴概要】
-#2024/08/18 作成開始　とりあえず一覧取得から
-"""
+# 【仮想環境】
+# VS Codeの設定で、Pythonインタープリタが正しく設定されているか確認してください。
+# コマンドパレット（Ctrl + Shift + P）を開き
+# 「Python: Select Interpreter」を選択し、正しいPython環境を選択します。
+#
+# 1.PowerShellを管理者権限で実行
+# 2.現在の実行ポリシーを確認
+#     Get-ExecutionPolicy
+# 3.実行ポリシーを変更
+#     Set-ExecutionPolicy RemoteSigned
+# 4.仮想環境にもどって、アクティブ化
+# 5.仮想環境のアクティベーション
+#     .\.venv\Scripts\activate
+#
+# 【仮想環境へインストールモジュール】
+# pip install geopandas requests fiona chardet
+#
+# 【履歴概要】
+# 2024/08/18 作成開始　とりあえず一覧取得から
+# 2024/08/22 CSVマージおよびGPKG作成を選択できるように修正
 
 import geopandas as gpd
 import pandas as pd
@@ -29,10 +28,82 @@ import chardet
 import io
 from charset_normalizer import detect
 from shapely.geometry import Point
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import simpledialog
 
 ###########################################
 ######## 自作関数ファイルを読み込み #########
 ###########################################
+
+######## コンフィグ入力画面 #########
+def input_config(title='入力フォーム', search_label='検索対象を入力:', data_type_label='データ形式を入力してください:'):
+    # メインウィンドウを作成
+    root = tk.Tk()
+    root.title(title)  # ウィンドウのタイトルを設定
+    
+    # ウィンドウサイズを設定
+    window_width = 650
+    window_height = 150
+    root.geometry(f"{window_width}x{window_height}")
+    
+    # 入力用のフレームを作成して左に配置
+    frame = tk.Frame(root)
+    frame.pack(anchor='w', padx=20, pady=20)  # 左寄せに配置
+    
+    # 入力用のラベルとエントリウィジェットを作成
+    tk.Label(frame, text=search_label).grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    search_entry = tk.Entry(frame, width=70) 
+    search_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    
+    tk.Label(frame, text=data_type_label).grid(row=1, column=0, padx=5, pady=5, sticky='w')
+    data_type_entry = tk.Entry(frame)
+    data_type_entry.grid(row=1, column=1, padx=5, pady=5, sticky='w')
+    
+    # 初期値をエントリに挿入
+    search_default = 'organization:t131105 title:トイレ'
+    data_type_default = 'csv'
+    search_entry.insert(0, search_default)
+    data_type_entry.insert(0, data_type_default)
+    
+    # 送信ボタンを作成
+    def submit():
+        nonlocal search, data_type
+        search = search_entry.get()
+        data_type = data_type_entry.get()
+        root.destroy()
+
+    submit_button = tk.Button(frame, text='送信', command=submit)
+    submit_button.grid(row=2, column=1, pady=10, sticky='e')  # 右寄せに配置
+    
+    # 初期化
+    search, data_type = search_default, data_type_default
+    
+    # Tkinterのイベントループを開始
+    root.mainloop()
+    
+    # 入力された値を返す
+    return search, data_type
+
+######## はい・いいえのダイアログ #########
+def show_confirmation_dialog(title, message):
+    """
+    確認ダイアログを表示し、ユーザーの応答を返す。
+
+    Parameters:
+    title (str): ダイアログのタイトル。
+    message (str): ダイアログに表示するメッセージ。
+
+    Returns:
+    bool: ユーザーが「はい」を選択した場合はTrue、それ以外はFalse。
+    """
+    # Tkinterのルートウィンドウを作成
+    root = tk.Tk()
+    # メインウィンドウを非表示にする 
+    root.withdraw()  
+    # 確認ダイアログを表示
+    result = messagebox.askyesno(title, message)
+    return result
 
 ######## URLからリストを抽出 #########
 def fetch_data_from_url(url, q, format):
@@ -155,25 +226,12 @@ try:
     ######## データアドレス一覧取得 #########
     url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
     # データセットタイトル
+    search, data_type = input_config()
+    print(f"search: {search}")
+    print(f"data_type: {data_type}")
 
-    # config.txtファイルを読み込みモードで開き変数を読み込む
-    # title = "title:トイレ"
-    # format = "csv"
-    # 設定を格納するための空の辞書を初期化
-    config = {}
-    with open('./config.txt', 'r', encoding='UTF-8') as f:
-        # ファイル内の各行を読み込む
-        for line in f:
-            # 空白を削除し、行をキーと値に分割
-            key, value = line.strip().split('=')
-            # 辞書にキーと値のペアを追加
-            config[key] = value
-    title = config['title']
-    format = config['format']
-    print(f"title: {title}")
-    print(f"format: {format}")
-    q = title
-    df = fetch_data_from_url(url, q, format)
+    q = search
+    df = fetch_data_from_url(url, q, data_type)
 
     if df is not None:
         print(df)
@@ -259,36 +317,45 @@ try:
     else:
         print(f"ファイルが見つかりません: {file_path}")
 
-    ######## すべてのファイルをマージする #########
-    # マージするCSVファイルを格納するリスト
-    csv_files = []
-    
-    # ディレクトリ内のファイルを取得
-    for filename in os.listdir(directory_path):
-        if filename.startswith('GIS_') and filename.endswith('.csv'):
-            csv_files.append(os.path.join(directory_path, filename))
+    ######## すべてのファイルをマージするかどうかの判断 #########
+    # 確認ダイアログを表示
+    title = "GIS_CSVのマージ・GPKGの作成"
+    message = "データによっては非常に所持時間が必要ですがよろしいですか。"
+    user_response = show_confirmation_dialog(title, message)
 
-    # CSVファイルを読み込み、データフレームをリストに追加
-    dataframes = [pd.read_csv(csv_file, low_memory=False) for csv_file in csv_files]
+    # ユーザーの応答に基づいて処理を行う
+    if user_response:
+        # 「はい」が選択された場合の処理
+        ######## すべてのファイルをマージする #########
+        # マージする’CSVファイルを格納するリスト
+        csv_files = []
+        
+        # ディレクトリ内のファイルを取得
+        for filename in os.listdir(directory_path):
+            if filename.startswith('GIS_') and filename.endswith('.csv'):
+                csv_files.append(os.path.join(directory_path, filename))
 
-    # データフレームをマージ
-    merged_df = pd.concat(dataframes, ignore_index=True)
+        # CSVファイルを読み込み、データフレームをリストに追加
+        dataframes = [pd.read_csv(csv_file, low_memory=False) for csv_file in csv_files]
 
-    # マージしたデータをCSVファイルとして保存
-    merged_csv_path = "./GIS_merge_csv.csv"
-    merged_df.to_csv(merged_csv_path, index=False)
+        # データフレームをマージ
+        merged_df = pd.concat(dataframes, ignore_index=True)
 
-    merged_df['geometry'] = merged_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
+        # マージしたデータをCSVファイルとして保存
+        merged_csv_path = "./GIS_merge_csv.csv"
+        merged_df.to_csv(merged_csv_path, index=False)
 
-    # GeoDataFrameに変換
-    gdf = gpd.GeoDataFrame(merged_df, geometry='geometry',crs='EPSG:4326')
+        merged_df['geometry'] = merged_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
 
-    # GPKGファイルとして保存
-    gpkg_path = "./GIS_merge.gpkg"
-    gdf.to_file(gpkg_path, driver='GPKG')
+        # GeoDataFrameに変換
+        gdf = gpd.GeoDataFrame(merged_df, geometry='geometry',crs='EPSG:4326')
 
-    print(f'Merged CSV saved to {merged_csv_path}')
-    print(f'GPKG file saved to {gpkg_path}')
+        # GPKGファイルとして保存
+        gpkg_path = "./GIS_merge.gpkg"
+        gdf.to_file(gpkg_path, driver='GPKG')
+
+        print(f'Merged CSV saved to {merged_csv_path}')
+        print(f'GPKG file saved to {gpkg_path}')
 
 # エラー処理
 except FileNotFoundError:
