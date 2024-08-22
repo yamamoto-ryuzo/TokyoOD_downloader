@@ -18,16 +18,15 @@
 ## 利用方法
 以下を同じフォルダに設置してください。  
 　　本体：TokyoOD_downloder.exe  
-　　設定ファイル：config.txt  
 作成されるフォルダ  
 　　ダウンロードする予定のURL一覧：./download/dataURLList.csv  
 　　ダウンロードしたデータ本体：./dowqnload/data 
 　　※注意　毎回起動時に自動削除します。
-## 設定ファイル：config.txt  
-title=title:トイレ  
-　↑「title:検索対象」データセットタイトルで検索  
-　↑「検索対処」全項目検索と思われます  
-format=csv  
+## 画面入力（サンプルが入っています）  
+organization:t131105 title:トイレ  
+　　　↑目黒区のコード　 　↑「title:検索対象」データセットタイトルで検索  
+datatype=csv  
+      ↑マージとかはCSVしか対応していません（今のところ）
 　↑当面このままで！  
 ## 出力サンプル
 #### マージデータ：  
