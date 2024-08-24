@@ -82,6 +82,8 @@ def input_config():
         global search_query, data_format
         search_query = search_entry.get()
         data_format = manual_data_type_entry.get() or data_type_var.get()
+        #小文字は必ず大文字に変換
+        data_format = data_format.upper()
         root.quit()  # mainloopを終了
 
     # 送信ボタンを作成
