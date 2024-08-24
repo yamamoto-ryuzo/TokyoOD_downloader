@@ -116,14 +116,14 @@ def show_confirmation_dialog(title, message):
     return result
 
 ######## URLからリストを抽出 #########
-def fetch_data_from_url(url, q, data_type):
+def fetch_data_from_url(url, q, format):
     """
     指定されたURLに対してPOSTリクエストを送り、CSVデータを取得してDataFrameとして返す関数。
 
     Parameters:
     url (str): データを取得するためのURL。
     q (str): 検索クエリ。
-    data_type (str): データのフォーマット（例: 'CSV'）。
+    format (str): データのフォーマット（例: 'CSV'）。
 
     Returns:
     pd.DataFrame: 取得したデータを含むDataFrame。取得に失敗した場合はNoneを返す。
@@ -131,7 +131,7 @@ def fetch_data_from_url(url, q, data_type):
     # POSTリクエスト用のデータを構築
     post_data = {
         "q": q,
-        "search_url_params": f"res_data_type={data_type}"
+        "search_url_params": f"res_format={format}"
     }
 
     # POSTリクエストを送信してファイルをダウンロード
@@ -158,9 +158,9 @@ def fetch_data_from_url(url, q, data_type):
 【使用例】
 url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
 q = "トイレ"
-data_type = "CSV"
+format = "CSV"
 
-df = fetch_data_from_url(url, q, data_type)
+df = fetch_data_from_url(url, q, format)
 if df is not None:
     print(df)
 """
@@ -234,6 +234,7 @@ try:
         os.makedirs(directory_path)
 
     ######## データアドレス一覧取得 #########
+    # https://catalog.data.metro.tokyo.lg.jp/csv/export title:トイレ
     url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
     # データセットタイトル
     search, data_type = input_config()
