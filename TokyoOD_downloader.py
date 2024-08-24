@@ -63,8 +63,8 @@ def input_config():
     
     # データ形式選択用のOptionMenuを作成
     tk.Label(frame, text='データ形式を選択してください:').grid(row=1, column=0, padx=5, pady=5, sticky='w')
-    data_type_var = tk.StringVar(value='csv')  # デフォルト値
-    data_type_options = ['csv'] #['csv', 'shp', 'geojson', 'pdf', 'xlsx', 'jpeg', 'xls', 'zip']
+    data_type_var = tk.StringVar(value='CSV')  # デフォルト値
+    data_type_options = ['CSV', 'SHP', 'GEOJSON', 'PDF', 'XLSX', 'JPEG', 'XLS', 'ZIP']
     data_type_menu = tk.OptionMenu(frame, data_type_var, *data_type_options)
     data_type_menu.grid(row=1, column=1, padx=5, pady=5, sticky='w')
     
@@ -284,7 +284,7 @@ try:
                 print(f"--------------------------ダウンロード完了: {download_dir+file_name}")
 
                 ######## CSVデータの場合の処理 #########
-                if data_type == 'csv':
+                if data_type == 'CSV':
                     ######## エンコードの確認 #########
                     # バイナリモードでファイルを開く
                     with open(f'{download_dir+file_name}', 'rb') as f:
@@ -331,7 +331,7 @@ try:
         print(f"ファイルが見つかりません: {file_path}")
 
     ######## CSVデータの場合の処理 #########
-    if data_type == 'csv':    
+    if data_type == 'CSV':    
         ######## すべてのファイルをマージするかどうかの判断 #########
         # 確認ダイアログを表示
         title = "GIS_CSVのマージ・GPKGの作成"
