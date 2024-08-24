@@ -37,53 +37,63 @@ from tkinter import simpledialog
 ###########################################
 
 ######## コンフィグ入力画面 #########
-def input_config(title='入力フォーム', search_label='検索対象を入力:', data_type_label='データ形式を入力してください:'):
+import tkinter as tk
+
+def input_config():
+    # グローバル変数を使用して値を保存
+    global search_query, data_format
+
     # メインウィンドウを作成
     root = tk.Tk()
-    root.title(title)  # ウィンドウのタイトルを設定
+    root.title('入力フォーム')  # ウィンドウタイトルを設定
     
     # ウィンドウサイズを設定
     window_width = 650
-    window_height = 150
+    window_height = 190
     root.geometry(f"{window_width}x{window_height}")
     
-    # 入力用のフレームを作成して左に配置
+    # フレームを作成して配置
     frame = tk.Frame(root)
-    frame.pack(anchor='w', padx=20, pady=20)  # 左寄せに配置
+    frame.pack(anchor='w', padx=20, pady=20)  # 左寄せ
     
-    # 入力用のラベルとエントリウィジェットを作成
-    tk.Label(frame, text=search_label).grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    # 検索入力用のラベルとエントリを作成
+    tk.Label(frame, text='検索対象を入力:').grid(row=0, column=0, padx=5, pady=5, sticky='w')
     search_entry = tk.Entry(frame, width=70) 
     search_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
     
-    tk.Label(frame, text=data_type_label).grid(row=1, column=0, padx=5, pady=5, sticky='w')
-    data_type_entry = tk.Entry(frame)
-    data_type_entry.grid(row=1, column=1, padx=5, pady=5, sticky='w')
+    # データ形式選択用のOptionMenuを作成
+    tk.Label(frame, text='データ形式を選択してください:').grid(row=1, column=0, padx=5, pady=5, sticky='w')
+    data_type_var = tk.StringVar(value='csv')  # デフォルト値
+    data_type_options = ['csv'] #['csv', 'shp', 'geojson', 'pdf', 'xlsx', 'jpeg', 'xls', 'zip']
+    data_type_menu = tk.OptionMenu(frame, data_type_var, *data_type_options)
+    data_type_menu.grid(row=1, column=1, padx=5, pady=5, sticky='w')
     
-    # 初期値をエントリに挿入
-    search_default = 'organization:t131105 title:トイレ'
-    data_type_default = 'csv'
-    search_entry.insert(0, search_default)
-    data_type_entry.insert(0, data_type_default)
-    
-    # 送信ボタンを作成
-    def submit():
-        nonlocal search, data_type
-        search = search_entry.get()
-        data_type = data_type_entry.get()
-        root.destroy()
+    # 手動入力用のエントリを作成
+    tk.Label(frame, text='データ形式を手入力で指定:').grid(row=2, column=0, padx=5, pady=5, sticky='w')
+    manual_data_type_entry = tk.Entry(frame, width=20)
+    manual_data_type_entry.grid(row=2, column=1, padx=5, pady=5, sticky='w') 
 
-    submit_button = tk.Button(frame, text='送信', command=submit)
-    submit_button.grid(row=2, column=1, pady=10, sticky='e')  # 右寄せに配置
+    # デフォルトの検索値を挿入
+    search_default = 'organization:t131105 title:トイレ'
+    search_entry.insert(0, search_default)
     
-    # 初期化
-    search, data_type = search_default, data_type_default
+    # 送信ボタンのクリック時の処理
+    def submit():
+        global search_query, data_format
+        search_query = search_entry.get()
+        data_format = manual_data_type_entry.get() or data_type_var.get()
+        root.quit()  # mainloopを終了
+
+    # 送信ボタンを作成
+    submit_button = tk.Button(frame, text='送信', command=submit)
+    submit_button.grid(row=3, column=1, pady=10, sticky='e')  # 右寄せ
     
     # Tkinterのイベントループを開始
     root.mainloop()
+    root.destroy()  # ウィンドウを閉じる
     
-    # 入力された値を返す
-    return search, data_type
+    # 検索クエリとデータ形式を返す
+    return search_query, data_format
 
 ######## はい・いいえのダイアログ #########
 def show_confirmation_dialog(title, message):
@@ -106,14 +116,14 @@ def show_confirmation_dialog(title, message):
     return result
 
 ######## URLからリストを抽出 #########
-def fetch_data_from_url(url, q, format):
+def fetch_data_from_url(url, q, data_type):
     """
     指定されたURLに対してPOSTリクエストを送り、CSVデータを取得してDataFrameとして返す関数。
 
     Parameters:
     url (str): データを取得するためのURL。
     q (str): 検索クエリ。
-    format (str): データのフォーマット（例: 'CSV'）。
+    data_type (str): データのフォーマット（例: 'CSV'）。
 
     Returns:
     pd.DataFrame: 取得したデータを含むDataFrame。取得に失敗した場合はNoneを返す。
@@ -121,7 +131,7 @@ def fetch_data_from_url(url, q, format):
     # POSTリクエスト用のデータを構築
     post_data = {
         "q": q,
-        "search_url_params": f"res_format={format}"
+        "search_url_params": f"res_data_type={data_type}"
     }
 
     # POSTリクエストを送信してファイルをダウンロード
@@ -148,9 +158,9 @@ def fetch_data_from_url(url, q, format):
 【使用例】
 url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
 q = "トイレ"
-format = "CSV"
+data_type = "CSV"
 
-df = fetch_data_from_url(url, q, format)
+df = fetch_data_from_url(url, q, data_type)
 if df is not None:
     print(df)
 """
@@ -266,96 +276,100 @@ try:
                 response = requests.get(url)
                 response.raise_for_status()  # ステータスコードがエラーの場合は例外を発生
 
-                # コンテンツをファイルに保存
+                ######## コンテンツをファイルに保存（ダウンロード） #########
                 file_name = url.split('/')[-1]  # URLの最後の部分をファイル名として使用
                 with open(f'{download_dir+file_name}', 'wb') as file:
                     file.write(response.content)
                 print(f"--------------------------ダウンロード完了: {download_dir+file_name}")
 
-                ######## エンコードの確認 #########
-                # バイナリモードでファイルを開く
-                with open(f'{download_dir+file_name}', 'rb') as f:
-                    # ファイルの内容を読み込む
-                    content = f.read()
-                    # エンコーディングを判定
-                    result = chardet.detect(content)
-                    # 判定結果を表示
-                    print(f"Encoding: {result['encoding']}, Confidence: {result['confidence']}")
+                ######## CSVデータの場合の処理 #########
+                if data_type == 'csv':
+                    ######## エンコードの確認 #########
+                    # バイナリモードでファイルを開く
+                    with open(f'{download_dir+file_name}', 'rb') as f:
+                        # ファイルの内容を読み込む
+                        content = f.read()
+                        # エンコーディングを判定
+                        result = chardet.detect(content)
+                        # 判定結果を表示
+                        print(f"Encoding: {result['encoding']}, Confidence: {result['confidence']}")
 
-                ######## result['encoding']がNone以外はUTF-8に変換 #########
-                if result['encoding'] != 'None':
-                    with open(f'{download_dir+file_name}', 'r', encoding=result['encoding'],errors='replace') as f:
-                        text = f.read()
-                    with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
-                        f.write(text)
-                    print(f"{download_dir+file_name}をUTF-8に変換しました。")
-                else:
-                    with open(f'{download_dir+file_name}', 'r', encoding='None',errors='replace') as f:
-                        text = f.read()
-                    with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
-                        f.write(text)
-                    print(f"{download_dir+file_name}をUTF-8に変換しました。")                   
+                    ######## result['encoding']がNone以外はUTF-8に変換 #########
+                    if result['encoding'] != 'None':
+                        with open(f'{download_dir+file_name}', 'r', encoding=result['encoding'],errors='replace') as f:
+                            text = f.read()
+                        with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
+                            f.write(text)
+                        print(f"{download_dir+file_name}をUTF-8に変換しました。")
+                    else:
+                        with open(f'{download_dir+file_name}', 'r', encoding='None',errors='replace') as f:
+                            text = f.read()
+                        with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
+                            f.write(text)
+                        print(f"{download_dir+file_name}をUTF-8に変換しました。")                   
 
-                ######## 緯度列の確認 #########
-                # UTF-8で再度CSVを読み込む
-                file_path = os.path.join(download_dir, file_name)
-                # エラーを無視する！　CSVなのに中身がCSV出ないデータあり！
-                # 後日　ファイル名にエラー表示をするように修正予定
-                data = pd.read_csv(file_path, encoding='UTF-8', on_bad_lines='skip')
-                if '緯度' in data.columns or '"緯度"' in data.columns:
-                    # ファイル名の先頭にGIS_を付け加える
-                    new_file_name = os.path.join(download_dir, f"GIS_{file_name}")
-                    print(f" {file_name} :位置情報があります。")
-                else:
-                    # ファイル名の先頭にNON_を付け加える
-                    new_file_name = os.path.join(download_dir, f"NON_{file_name}")
-                    print(f" {file_name} :位置情報がありません。")
-                force_rename(f'{download_dir+file_name}', new_file_name)
-                print(f"ファイル名を変更しました: {file_name} -> {new_file_name}")
+                    ######## 緯度列の確認 #########
+                    # UTF-8で再度CSVを読み込む
+                    file_path = os.path.join(download_dir, file_name)
+                    # エラーを無視する！　CSVなのに中身がCSVでないデータあり！
+                    # 後日　ファイル名にエラー表示をするように修正予定
+                    data = pd.read_csv(file_path, encoding='UTF-8', on_bad_lines='skip')
+                    if '緯度' in data.columns or '"緯度"' in data.columns:
+                        # ファイル名の先頭にGIS_を付け加える
+                        new_file_name = os.path.join(download_dir, f"GIS_{file_name}")
+                        print(f" {file_name} :位置情報があります。")
+                    else:
+                        # ファイル名の先頭にNON_を付け加える
+                        new_file_name = os.path.join(download_dir, f"NON_{file_name}")
+                        print(f" {file_name} :位置情報がありません。")
+                    force_rename(f'{download_dir+file_name}', new_file_name)
+                    print(f"ファイル名を変更しました: {file_name} -> {new_file_name}")
             except requests.exceptions.RequestException as e:
                 print(f"{url}のダウンロードに失敗しました: {e}")
     else:
         print(f"ファイルが見つかりません: {file_path}")
 
-    ######## すべてのファイルをマージするかどうかの判断 #########
-    # 確認ダイアログを表示
-    title = "GIS_CSVのマージ・GPKGの作成"
-    message = "データによっては非常に所持時間が必要ですがよろしいですか。"
-    user_response = show_confirmation_dialog(title, message)
+    ######## CSVデータの場合の処理 #########
+    if data_type == 'csv':    
+        ######## すべてのファイルをマージするかどうかの判断 #########
+        # 確認ダイアログを表示
+        title = "GIS_CSVのマージ・GPKGの作成"
+        message = "データによっては非常に所持時間が必要ですがよろしいですか。"
+        user_response = show_confirmation_dialog(title, message)
 
-    # ユーザーの応答に基づいて処理を行う
-    if user_response:
-        # 「はい」が選択された場合の処理
-        ######## すべてのファイルをマージする #########
-        # マージする’CSVファイルを格納するリスト
-        csv_files = []
-        
-        # ディレクトリ内のファイルを取得
-        for filename in os.listdir(directory_path):
-            if filename.startswith('GIS_') and filename.endswith('.csv'):
-                csv_files.append(os.path.join(directory_path, filename))
+        # ユーザーの応答に基づいて処理を行う
+        if user_response:
+            # 「はい」が選択された場合の処理
+            ######## すべてのファイルをマージする #########
+            # マージする’CSVファイルを格納するリスト
+            csv_files = []
+            
+            # ディレクトリ内のファイルを取得
+            for filename in os.listdir(directory_path):
+                if filename.startswith('GIS_') and filename.endswith('.csv'):
+                    csv_files.append(os.path.join(directory_path, filename))
 
-        # CSVファイルを読み込み、データフレームをリストに追加
-        dataframes = [pd.read_csv(csv_file, low_memory=False) for csv_file in csv_files]
+            # CSVファイルを読み込み、データフレームをリストに追加
+            dataframes = [pd.read_csv(csv_file, low_memory=False) for csv_file in csv_files]
 
-        # データフレームをマージ
-        merged_df = pd.concat(dataframes, ignore_index=True)
+            # データフレームをマージ
+            merged_df = pd.concat(dataframes, ignore_index=True)
 
-        # マージしたデータをCSVファイルとして保存
-        merged_csv_path = "./GIS_merge_csv.csv"
-        merged_df.to_csv(merged_csv_path, index=False)
+            # マージしたデータをCSVファイルとして保存
+            merged_csv_path = "./GIS_merge_csv.csv"
+            merged_df.to_csv(merged_csv_path, index=False)
 
-        merged_df['geometry'] = merged_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
+            merged_df['geometry'] = merged_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
 
-        # GeoDataFrameに変換
-        gdf = gpd.GeoDataFrame(merged_df, geometry='geometry',crs='EPSG:4326')
+            # GeoDataFrameに変換
+            gdf = gpd.GeoDataFrame(merged_df, geometry='geometry',crs='EPSG:4326')
 
-        # GPKGファイルとして保存
-        gpkg_path = "./GIS_merge.gpkg"
-        gdf.to_file(gpkg_path, driver='GPKG')
+            # GPKGファイルとして保存
+            gpkg_path = "./GIS_merge.gpkg"
+            gdf.to_file(gpkg_path, driver='GPKG')
 
-        print(f'Merged CSV saved to {merged_csv_path}')
-        print(f'GPKG file saved to {gpkg_path}')
+            print(f'Merged CSV saved to {merged_csv_path}')
+            print(f'GPKG file saved to {gpkg_path}')
 
 # エラー処理
 except FileNotFoundError:
