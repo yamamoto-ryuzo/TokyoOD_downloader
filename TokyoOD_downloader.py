@@ -400,17 +400,21 @@ try:
             merged_csv_path = "./GIS_merge_csv.csv"
             merged_df.to_csv(merged_csv_path, index=False)
 
-            merged_df['geometry'] = merged_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
+            # '緯度'を数値に変換し、エラーをNaNに変換
+            merged_df['緯度'] = pd.to_numeric(merged_df['緯度'], errors='coerce')
+
+            # '緯度'がNaNの行を削除
+            filtered_df = merged_df.dropna(subset=['緯度'])
+
+            # 'geometry'列を作成
+            filtered_df['geometry'] = filtered_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
 
             # GeoDataFrameに変換
-            gdf = gpd.GeoDataFrame(merged_df, geometry='geometry',crs='EPSG:4326')
+            gdf = gpd.GeoDataFrame(filtered_df, geometry='geometry', crs='EPSG:4326')
 
             # GPKGファイルとして保存
             gpkg_path = "./GIS_merge.gpkg"
             gdf.to_file(gpkg_path, driver='GPKG')
-
-            print(f'Merged CSV saved to {merged_csv_path}')
-            print(f'GPKG file saved to {gpkg_path}')
 
 # エラー処理
 except FileNotFoundError:
