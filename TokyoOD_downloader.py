@@ -203,6 +203,38 @@ def clean_work_folder(folder_path):
     os.makedirs(folder_path)
     print(f"{folder_path}フォルダのクリーニングが完了しました。")
 
+########名称にデータを統一########
+def load_and_modify_csv(download_dir, file_name):
+    file_path = os.path.join(download_dir, file_name)
+    try:
+        # CSVファイルを読み込む
+        data = pd.read_csv(file_path, encoding='UTF-8', on_bad_lines='skip')
+
+        # すべてのデータがない行を削除する
+        data = data.dropna(how='all')
+        
+        # '名称'カラムが存在しない場合のみ、他のカラムをチェックし、'名称'カラムを作成
+        if '名称' not in data.columns:
+            # '名称', '*名称*', 'NAME'カラムの存在をチェックし、'名称'カラムを作成
+            name_columns = ['NAME', '施設名', '保育園名']
+            for col in name_columns:
+                if col in data.columns:
+                    data['名称'] = data[col]
+                    break
+        # 変更を上書き保存
+        data.to_csv(file_path, index=False, encoding='UTF-8')
+        print(f"{file_name} : ファイルが上書き保存されました。")
+    
+    except FileNotFoundError:
+        print(f"エラー: ファイルが見つかりません - {file_path}")
+    except Exception as e:
+        print(f"エラーが発生しました: {e}")
+
+# 使用例
+#download_dir = '/path/to/download'
+#file_name = 'example.csv'
+#load_and_modify_csv(download_dir, file_name)
+
 #########################
 ######## メイン #########
 ########################
@@ -309,9 +341,13 @@ try:
                             text = f.read()
                         with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
                             f.write(text)
-                        print(f"{download_dir+file_name}をUTF-8に変換しました。")                   
+                        print(f"{download_dir+file_name}をUTF-8に変換しました。")    
+
+                    ########属性：名称に類似属性のデータを統一########
+                    load_and_modify_csv(download_dir, file_name)
 
                     ######## 緯度列の確認 #########
+                    ######## ファイル名変更 #########
                     # UTF-8で再度CSVを読み込む
                     file_path = os.path.join(download_dir, file_name)
                     # エラーを無視する！　CSVなのに中身がCSVでないデータあり！
@@ -327,6 +363,8 @@ try:
                         print(f" {file_name} :位置情報がありません。")
                     force_rename(f'{download_dir+file_name}', new_file_name)
                     print(f"ファイル名を変更しました: {file_name} -> {new_file_name}")
+
+
             except requests.exceptions.RequestException as e:
                 print(f"{url}のダウンロードに失敗しました: {e}")
     else:
