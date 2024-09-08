@@ -31,8 +31,7 @@
 organization:t131105 title:トイレ  
 　　　↑目黒区のコード　 　↑「title:検索対象」データセットタイトルで検索  
 datatype=csv  
-![image](https://github.com/user-attachments/assets/f9259dc0-21fd-43bc-800f-a24d5ea3a2cc)
-
+![image](https://github.com/user-attachments/assets/46b133c0-8c19-493c-83fe-5709c4f57e6c)
 
 ## 出力サンプル
 #### マージデータ：  
