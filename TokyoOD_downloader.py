@@ -13,7 +13,7 @@
 #     .\.venv\Scripts\activate
 #
 # 【仮想環境へインストールモジュール】
-# pip install geopandas requests fiona chardet
+# pip install geopandas requests fiona chardet ftfy
 #
 # 【履歴概要】
 # 2024/08/18 作成開始　とりあえず一覧取得から
@@ -31,6 +31,7 @@ from shapely.geometry import Point
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
+import ftfy
 
 ###########################################
 ######## 自作関数ファイルを読み込み #########
@@ -41,37 +42,46 @@ import tkinter as tk
 
 def input_config():
     # グローバル変数を使用して値を保存
-    global search_query, data_format
+    global search_query, data_format, selected_urls
 
     # メインウィンドウを作成
     root = tk.Tk()
     root.title('入力フォーム')  # ウィンドウタイトルを設定
     
     # ウィンドウサイズを設定
-    window_width = 650
-    window_height = 190
+    window_width = 700
+    window_height = 250
     root.geometry(f"{window_width}x{window_height}")
     
     # フレームを作成して配置
     frame = tk.Frame(root)
     frame.pack(anchor='w', padx=20, pady=20)  # 左寄せ
     
-    # 検索入力用のラベルとエントリを作成
-    tk.Label(frame, text='検索対象を入力:').grid(row=0, column=0, padx=5, pady=5, sticky='w')
-    search_entry = tk.Entry(frame, width=70) 
-    search_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-    
+    # URL選択用のOptionMenuを作成
+    tk.Label(frame, text='カタログサイトURLを選択してください:').grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    url_var = tk.StringVar(value="https://catalog.data.metro.tokyo.lg.jp/csv/export")  # デフォルト値
+    url_options = [
+        "https://catalog.data.metro.tokyo.lg.jp/csv/export",
+    ]
+    url_menu = tk.OptionMenu(frame, url_var, *url_options)
+    url_menu.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+
     # データ形式選択用のOptionMenuを作成
     tk.Label(frame, text='データ形式を選択してください:').grid(row=1, column=0, padx=5, pady=5, sticky='w')
     data_type_var = tk.StringVar(value='CSV')  # デフォルト値
     data_type_options = ['CSV', 'SHP', 'GEOJSON', 'PDF', 'XLSX', 'JPEG', 'XLS', 'ZIP']
     data_type_menu = tk.OptionMenu(frame, data_type_var, *data_type_options)
     data_type_menu.grid(row=1, column=1, padx=5, pady=5, sticky='w')
-    
+
     # 手動入力用のエントリを作成
     tk.Label(frame, text='データ形式を手入力で指定:').grid(row=2, column=0, padx=5, pady=5, sticky='w')
     manual_data_type_entry = tk.Entry(frame, width=20)
-    manual_data_type_entry.grid(row=2, column=1, padx=5, pady=5, sticky='w') 
+    manual_data_type_entry.grid(row=2, column=1, padx=5, pady=5, sticky='w')     
+
+    # 検索入力用のラベルとエントリを作成
+    tk.Label(frame, text='検索対象を入力:').grid(row=3, column=0, padx=5, pady=5, sticky='w')
+    search_entry = tk.Entry(frame, width=70) 
+    search_entry.grid(row=3, column=1, padx=5, pady=5, sticky='w')
 
     # デフォルトの検索値を挿入
     search_default = 'organization:t131105 title:トイレ'
@@ -79,23 +89,32 @@ def input_config():
     
     # 送信ボタンのクリック時の処理
     def submit():
-        global search_query, data_format
+        global search_query, data_format, selected_urls
         search_query = search_entry.get()
         data_format = manual_data_type_entry.get() or data_type_var.get()
-        #小文字は必ず大文字に変換
         data_format = data_format.upper()
+        
+        # 選択されたURLを取得
+        selected_urls = url_var.get()
+        
         root.quit()  # mainloopを終了
 
     # 送信ボタンを作成
     submit_button = tk.Button(frame, text='送信', command=submit)
-    submit_button.grid(row=3, column=1, pady=10, sticky='e')  # 右寄せ
+    submit_button.grid(row=4, column=1, pady=10, sticky='e')  # 右寄せ
     
     # Tkinterのイベントループを開始
     root.mainloop()
     root.destroy()  # ウィンドウを閉じる
     
-    # 検索クエリとデータ形式を返す
-    return search_query, data_format
+    # 検索クエリ、データ形式、選択されたURLを返す
+    return search_query, data_format, selected_urls
+
+# 使用例
+# search_query, data_format, selected_urls = input_config()
+# print("検索クエリ:", search_query)
+# print("データ形式:", data_format)
+# print("選択されたURL:", selected_urls)
 
 ######## はい・いいえのダイアログ #########
 def show_confirmation_dialog(title, message):
@@ -178,7 +197,6 @@ def download_DataURL(df, columns_to_select, output_file):
 # 'df'DataFrameで、'データURL'がデータのURLを含む列名であると仮定
 # download_DataURL(df, 'データURL', 'data.csv')
 
-
 ######## ファイルの強制リネーム #########
 def force_rename(src, dst):
     # 目的のファイルが既に存在する場合、削除する
@@ -216,7 +234,7 @@ def load_and_modify_csv(download_dir, file_name):
         # '名称'カラムが存在しない場合のみ、他のカラムをチェックし、'名称'カラムを作成
         if '名称' not in data.columns:
             # '名称', '*名称*', 'NAME'カラムの存在をチェックし、'名称'カラムを作成
-            name_columns = ['NAME', '施設名', '保育園名']
+            name_columns = ['NAME', '施設名', '保育園名','鉄道駅名']
             for col in name_columns:
                 if col in data.columns:
                     data['名称'] = data[col]
@@ -234,6 +252,8 @@ def load_and_modify_csv(download_dir, file_name):
 #download_dir = '/path/to/download'
 #file_name = 'example.csv'
 #load_and_modify_csv(download_dir, file_name)
+
+
 
 #########################
 ######## メイン #########
@@ -268,12 +288,11 @@ try:
         os.makedirs(directory_path)
 
     ######## データアドレス一覧取得 #########
-    # https://catalog.data.metro.tokyo.lg.jp/csv/export title:トイレ
-    url = "https://catalog.data.metro.tokyo.lg.jp/csv/export"
     # データセットタイトル
-    search, data_type = input_config()
+    search, data_type , url = input_config()
     print(f"search: {search}")
     print(f"data_type: {data_type}")
+    print(f"url: {url}")
 
     q = search
     df = fetch_data_from_url(url, q, data_type)
@@ -322,26 +341,35 @@ try:
                     ######## エンコードの確認 #########
                     # バイナリモードでファイルを開く
                     with open(f'{download_dir+file_name}', 'rb') as f:
-                        # ファイルの内容を読み込む
                         content = f.read()
-                        # エンコーディングを判定
                         result = chardet.detect(content)
-                        # 判定結果を表示
-                        print(f"Encoding: {result['encoding']}, Confidence: {result['confidence']}")
+                        print(f"Detected Encoding: {result['encoding']}, Confidence: {result['confidence']}")
 
-                    ######## result['encoding']がNone以外はUTF-8に変換 #########
-                    if result['encoding'] != 'None':
-                        with open(f'{download_dir+file_name}', 'r', encoding=result['encoding'],errors='replace') as f:
-                            text = f.read()
-                        with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
-                            f.write(text)
-                        print(f"{download_dir+file_name}をUTF-8に変換しました。")
-                    else:
-                        with open(f'{download_dir+file_name}', 'r', encoding='None',errors='replace') as f:
-                            text = f.read()
-                        with open(f'{download_dir+file_name}', 'w', encoding='UTF-8') as f:
-                            f.write(text)
-                        print(f"{download_dir+file_name}をUTF-8に変換しました。")    
+                        ######## エンコーディングの検証 #########
+                        encoding = result['encoding']
+                        common_encodings = ['utf-8', 'shift_jis', 'euc-jp', 'iso-2022-jp', 'cp932']
+                        if encoding is None or encoding == 'NON' or result['confidence'] < 0.7:
+                            print(f"{download_dir+file_name}のエンコーディングを再検証します。")
+                            for enc in common_encodings:
+                                try:
+                                    with open(f'{download_dir+file_name}', 'r', encoding=enc) as f:
+                                        text = f.read()
+                                    encoding = enc
+                                    print(f"エンコーディングを{enc}と判定しました。")
+                                    break
+                                except UnicodeDecodeError:
+                                    continue
+                            else:
+                                print(f"{download_dir+file_name}のエンコーディングを判定できませんでした。")
+                        ######## エンコーディングの変換 #########  
+                        try:
+                            with open(f'{download_dir+file_name}', 'r', encoding=encoding) as f:
+                                text = f.read()
+                            with open(f'{download_dir+file_name}', 'w', encoding='utf-8') as f:
+                                f.write(text)
+                            print(f"{download_dir+file_name}をUTF-8に変換しました。")
+                        except Exception as e:
+                            print(f"{download_dir+file_name}の変換中にエラーが発生しました: {str(e)}")  
 
                     ########属性：名称に類似属性のデータを統一########
                     load_and_modify_csv(download_dir, file_name)
@@ -353,7 +381,10 @@ try:
                     # エラーを無視する！　CSVなのに中身がCSVでないデータあり！
                     # 後日　ファイル名にエラー表示をするように修正予定
                     data = pd.read_csv(file_path, encoding='UTF-8', on_bad_lines='skip')
-                    if '緯度' in data.columns or '"緯度"' in data.columns:
+                    # チェックする列名のリストを定義
+                    check_columns = ['緯度', '"緯度"', 'latitude', 'lat', 'x']
+                    # any()を使って、これらの列名がdata.columnsに存在するかを確認
+                    if any(col in data.columns for col in check_columns):
                         # ファイル名の先頭にGIS_を付け加える
                         new_file_name = os.path.join(download_dir, f"GIS_{file_name}")
                         print(f" {file_name} :位置情報があります。")
