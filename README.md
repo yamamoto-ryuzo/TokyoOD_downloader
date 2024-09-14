@@ -1,7 +1,7 @@
 # TokyoOD_downloader
-  [本体はこちらからダウンロードも可能（ちょっと古いこともあるかも。。。）](https://1drv.ms/u/c/cbbfeab49e70546f/EUECp2yGUGFGumAZdLTmtbgB8cbhqMfqGFLh-nrMJ1O9yw?e=UFrj23)  
+  [本体はこちらからダウンロードも可能（20240908版）](https://1drv.ms/u/c/cbbfeab49e70546f/EUECp2yGUGFGumAZdLTmtbgB8cbhqMfqGFLh-nrMJ1O9yw?e=UFrj23)  
 ## 最終目標  
-[東京都オープンデータカタログサイト](https://portal.data.metro.tokyo.lg.jp/)からオープンデータ一覧をダウンロードして、CSVデータのうち位置情報のあるデータを抽出し、ダウンロードしたデータは以下でPostgRESTとして公開予定。
+[東京都オープンデータカタログサイト](https://portal.data.metro.tokyo.lg.jp/)からオープンデータ一覧をダウンロードして、CSVデータのうち位置情報のあるデータを抽出し、ダウンロードしたデータは以下でPostgRESTとして公開予定。  
 　https://github.com/yamamoto-ryuzo/PostgREST-installation-Japanese-memo/blob/main/使用方法.md  
 #### 【動作フロー】  
 　 データ検索　＞　カタログデータ一覧取得　＞　実データ一括ダウンロード  
@@ -31,8 +31,7 @@
 organization:t131105 title:トイレ  
 　　　↑目黒区のコード　 　↑「title:検索対象」データセットタイトルで検索  
 datatype=csv  
-![image](https://github.com/user-attachments/assets/f9259dc0-21fd-43bc-800f-a24d5ea3a2cc)
-
+![image](https://github.com/user-attachments/assets/46b133c0-8c19-493c-83fe-5709c4f57e6c)
 
 ## 出力サンプル
 #### マージデータ：  
