@@ -1,5 +1,6 @@
 # TokyoOD_downloader
   [本体はこちらからダウンロードも可能（20240908版）](https://1drv.ms/u/c/cbbfeab49e70546f/EUECp2yGUGFGumAZdLTmtbgB8cbhqMfqGFLh-nrMJ1O9yw?e=UFrj23)  
+  [システム概要はこちら](https://github.com/yamamoto-ryuzo/TokyoOD_downloader/blob/main/readme.pdf)
 ## 最終目標  
 [東京都オープンデータカタログサイト](https://portal.data.metro.tokyo.lg.jp/)からオープンデータ一覧をダウンロードして、CSVデータのうち位置情報のあるデータを抽出し、ダウンロードしたデータは以下でPostgRESTとして公開予定。  
 　https://github.com/yamamoto-ryuzo/PostgREST-installation-Japanese-memo/blob/main/使用方法.md  
