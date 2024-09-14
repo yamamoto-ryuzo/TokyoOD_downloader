@@ -1,4 +1,4 @@
-**/__pycache__/**
+__pycache__
 /work/
 /result/
 /*.csv
@@ -6,3 +6,4 @@
 /.venv
 /build
 /download
+/output
