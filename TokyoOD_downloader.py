@@ -35,6 +35,9 @@ import ftfy
 from pathvalidate import sanitize_filename
 from urllib.parse import urlparse, unquote
 
+#########独自関数
+import csv_convert
+
 ###########################################
 ######## 自作関数ファイルを読み込み #########
 ###########################################
@@ -281,9 +284,21 @@ https://catalog.data.metro.tokyo.lg.jp/dataset?q=title:トイレ一覧+AND+res_d
 """
 
 try:
+    ######## データアドレス一覧取得 #########
+    # データセットタイトル
+    search, data_type , url = input_config()
+    print(f"search: {search}")
+    print(f"data_type: {data_type}")
+    print(f"url: {url}")
+    q = search
+    df = fetch_data_from_url(url, q, data_type)
+    if df is not None:
+        print(df)
+
     ######## ダウンロードフォルダの作成 #########
     # ディレクトリのパスを指定
-    directory_path = './download/data'
+    directory_path = './data/'+ data_type
+    print (f"保存先ディレクトリ：{directory_path}")
     # ディレクトリが存在する場合に削除
     try:
         if os.path.exists(directory_path):
@@ -294,22 +309,9 @@ try:
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
 
-    ######## データアドレス一覧取得 #########
-    # データセットタイトル
-    search, data_type , url = input_config()
-    print(f"search: {search}")
-    print(f"data_type: {data_type}")
-    print(f"url: {url}")
-
-    q = search
-    df = fetch_data_from_url(url, q, data_type)
-
-    if df is not None:
-        print(df)
-
     ######## データアドレスを必要な属性のみ保存 #########
     columns_to_select = ['データセットID','データURL','データセットタイトル']
-    file_path="./download/dataURLList.csv"
+    file_path="./data/dataURLList.csv"
     download_DataURL(df,columns_to_select,file_path)  
 
     ######## 実際のデータをダウンロード #########
@@ -327,7 +329,7 @@ try:
 
         ######## 各URLからデータをダウンロード ########
         ######## 領域のクリア #########
-        download_dir = "./download/data/"
+        download_dir = directory_path
         #clean_work_folder(download_dir)
 
         for url in attribute_urls:
@@ -339,74 +341,19 @@ try:
 
                 ######## コンテンツをファイルに保存（ダウンロード） #########
                 file_name = get_safe_filename_from_url(url) #適切なファイル名を取得
-                with open(f'{download_dir+file_name}', 'wb') as file:
+                with open(f'{download_dir+'/'+file_name}', 'wb') as file:
                     file.write(response.content)
-                print(f"--------------------------ダウンロード完了: {download_dir+file_name}")
-
-                ######## CSVデータの場合の処理 #########
-                if data_type == 'CSV':
-                    ######## エンコードの確認 #########
-                    # バイナリモードでファイルを開く
-                    with open(f'{download_dir+file_name}', 'rb') as f:
-                        content = f.read()
-                        result = chardet.detect(content)
-                        print(f"Detected Encoding: {result['encoding']}, Confidence: {result['confidence']}")
-
-                        ######## エンコーディングの検証 #########
-                        encoding = result['encoding']
-                        common_encodings = ['utf-8', 'shift_jis', 'euc-jp', 'iso-2022-jp', 'cp932']
-                        if encoding is None or encoding == 'NON' or result['confidence'] < 0.7:
-                            print(f"{download_dir+file_name}のエンコーディングを再検証します。")
-                            for enc in common_encodings:
-                                try:
-                                    with open(f'{download_dir+file_name}', 'r', encoding=enc) as f:
-                                        text = f.read()
-                                    encoding = enc
-                                    print(f"エンコーディングを{enc}と判定しました。")
-                                    break
-                                except UnicodeDecodeError:
-                                    continue
-                            else:
-                                print(f"{download_dir+file_name}のエンコーディングを判定できませんでした。")
-                        ######## エンコーディングの変換 #########  
-                        try:
-                            with open(f'{download_dir+file_name}', 'r', encoding=encoding) as f:
-                                text = f.read()
-                            with open(f'{download_dir+file_name}', 'w', encoding='utf-8') as f:
-                                f.write(text)
-                            print(f"{download_dir+file_name}をUTF-8に変換しました。")
-                        except Exception as e:
-                            print(f"{download_dir+file_name}の変換中にエラーが発生しました: {str(e)}")  
-
-                    ########属性：名称に類似属性のデータを統一########
-                    load_and_modify_csv(download_dir, file_name)
-
-                    ######## 緯度列の確認 #########
-                    ######## ファイル名変更 #########
-                    # UTF-8で再度CSVを読み込む
-                    file_path = os.path.join(download_dir, file_name)
-                    # エラーを無視する！　CSVなのに中身がCSVでないデータあり！
-                    # 後日　ファイル名にエラー表示をするように修正予定
-                    data = pd.read_csv(file_path, encoding='UTF-8', on_bad_lines='skip')
-                    # チェックする列名のリストを定義
-                    check_columns = ['緯度', '"緯度"', 'latitude', 'lat', 'x']
-                    # any()を使って、これらの列名がdata.columnsに存在するかを確認
-                    if any(col in data.columns for col in check_columns):
-                        # ファイル名の先頭にGIS_を付け加える
-                        new_file_name = os.path.join(download_dir, f"GIS_{file_name}")
-                        print(f" {file_name} :位置情報があります。")
-                    else:
-                        # ファイル名の先頭にNON_を付け加える
-                        new_file_name = os.path.join(download_dir, f"NON_{file_name}")
-                        print(f" {file_name} :位置情報がありません。")
-                    force_rename(f'{download_dir+file_name}', new_file_name)
-                    print(f"ファイル名を変更しました: {file_name} -> {new_file_name}")
-
+                print(f"--------------------------ダウンロード完了: {download_dir+'/'+file_name}")
 
             except requests.exceptions.RequestException as e:
                 print(f"{url}のダウンロードに失敗しました: {e}")
     else:
         print(f"ファイルが見つかりません: {file_path}")
+
+    ######## CSVのデータコンバート #########
+    input_directory = './data/csv'
+    output_directory = './data/csv_convert'
+    csv_convert.process_csv_files(input_directory, output_directory)
 
     ######## CSVデータの場合の処理 #########
     if data_type == 'CSV':    
