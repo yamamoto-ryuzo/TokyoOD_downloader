@@ -36,7 +36,7 @@ from pathvalidate import sanitize_filename
 from urllib.parse import urlparse, unquote
 
 #########独自関数
-import csv_convert
+import csv_convert,xls2csv
 
 ###########################################
 ######## 自作関数ファイルを読み込み #########
@@ -350,13 +350,20 @@ try:
     else:
         print(f"ファイルが見つかりません: {file_path}")
 
-    ######## CSVのデータコンバート #########
-    input_directory = './data/csv'
-    output_directory = './data/csv_convert'
-    csv_convert.process_csv_files(input_directory, output_directory)
+
+    ######## XLSデータの場合の処理 #########
+    if data_type == 'XLS':
+        input_directory = directory_path
+        output_directory = './data/csv'
+        xls2csv.process_excels_in_batches(input_directory, output_directory)
+        data_type = 'CSV'
 
     ######## CSVデータの場合の処理 #########
-    if data_type == 'CSV':    
+    if data_type == 'CSV':
+        ######## CSVのデータコンバート #########
+        input_directory = './data/'+ data_type
+        output_directory = './data/csv_convert'
+        csv_convert.process_csv_files(input_directory, output_directory)
         ######## すべてのファイルをマージするかどうかの判断 #########
         # 確認ダイアログを表示
         title = "GIS_CSVのマージ・GPKGの作成"
