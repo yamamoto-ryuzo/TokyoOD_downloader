@@ -13,7 +13,7 @@
 #     .\.venv\Scripts\activate
 #
 # 【仮想環境へインストールモジュール】
-# pip install geopandas requests fiona chardet ftfy
+# pip install geopandas requests fiona chardet ftfy pathvalidate
 #
 # 【履歴概要】
 # 2024/08/18 作成開始　とりあえず一覧取得から
@@ -32,6 +32,8 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
 import ftfy
+from pathvalidate import sanitize_filename
+from urllib.parse import urlparse, unquote
 
 ###########################################
 ######## 自作関数ファイルを読み込み #########
@@ -185,11 +187,16 @@ df = fetch_data_from_url(url, q, format)
 if df is not None:
     print(df)
 """
+######## URLから適切なファイル名を生成 #########
+def get_safe_filename_from_url(url):
+    parsed_url = urlparse(url)
+    unsafe_filename = os.path.basename(unquote(parsed_url.path))
+    return sanitize_filename(unsafe_filename)
+
 ######## URLのファイルをダウンロード #########
 def download_DataURL(df, columns_to_select, output_file):
     # DataURLの列を抽出
     DataURL = df[columns_to_select]
-
     # URLをCSVファイルに保存
     DataURL.to_csv(output_file, index=False, encoding='UTF-8')
 
@@ -308,7 +315,7 @@ try:
     ######## 実際のデータをダウンロード #########
     # ファイルの存在を確認
     if os.path.exists(file_path):
-        # CSVファイルを読み込む
+        # ダウンロードするファイルリストの記載されたCSVファイルを読み込む
         data = pd.read_csv(file_path)
 
         # データURLが含まれている列を特定（ここでは'URL'という列名を仮定）
@@ -331,7 +338,7 @@ try:
                 response.raise_for_status()  # ステータスコードがエラーの場合は例外を発生
 
                 ######## コンテンツをファイルに保存（ダウンロード） #########
-                file_name = url.split('/')[-1]  # URLの最後の部分をファイル名として使用
+                file_name = get_safe_filename_from_url(url) #適切なファイル名を取得
                 with open(f'{download_dir+file_name}', 'wb') as file:
                     file.write(response.content)
                 print(f"--------------------------ダウンロード完了: {download_dir+file_name}")

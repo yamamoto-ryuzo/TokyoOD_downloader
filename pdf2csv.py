@@ -100,5 +100,5 @@ def process_pdfs_in_batches(input_folder, output_folder, batch_size=5):
 # メイン処理
 if __name__ == "__main__":
     input_folder = "./download/data"
-    output_folder = "./output"
+    output_folder = "./download/output"
     process_pdfs_in_batches(input_folder, output_folder)
