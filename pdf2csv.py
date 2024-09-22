@@ -98,7 +98,7 @@ def process_pdfs_in_batches(input_folder, output_folder, batch_size=5):
     logging.info("すべてのPDFファイルの処理が完了しました")
 
 # メイン処理
-if __name__ == "__main__":
-    input_folder = "./download/data"
-    output_folder = "./download/output"
-    process_pdfs_in_batches(input_folder, output_folder)
+#if __name__ == "__main__":
+#    input_folder = "./download/data"
+#    output_folder = "./download/output"
+#    process_pdfs_in_batches(input_folder, output_folder)

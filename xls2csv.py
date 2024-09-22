@@ -64,7 +64,7 @@ def process_excels_in_batches(input_folder, output_folder, batch_size=5):
 
     logging.info("すべてのExcelファイルの処理が完了しました")
 
-if __name__ == "__main__":
-    input_folder = "./data/xls"
-    output_folder = "./data/csv"
-    process_excels_in_batches(input_folder, output_folder)
+#if __name__ == "__main__":
+#    input_folder = "./data/xls"
+#    output_folder = "./data/csv"
+#    process_excels_in_batches(input_folder, output_folder)

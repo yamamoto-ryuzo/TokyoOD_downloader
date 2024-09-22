@@ -99,6 +99,7 @@ def force_rename(old_path, new_path):
     os.rename(old_path, new_path)
 
 # 使用例
-input_directory = './data/csv'
-output_directory = './data/csv_convert'
-process_csv_files(input_directory, output_directory)
+#if __name__ == "__main__":
+#    input_directory = './data/csv'
+#    output_directory = './data/csv_convert'
+#    process_csv_files(input_directory, output_directory)
