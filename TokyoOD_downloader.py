@@ -74,7 +74,7 @@ def input_config():
     # データ形式選択用のOptionMenuを作成
     tk.Label(frame, text='データ形式を選択してください:').grid(row=1, column=0, padx=5, pady=5, sticky='w')
     data_type_var = tk.StringVar(value='CSV')  # デフォルト値
-    data_type_options = ['CSV', 'SHP', 'GEOJSON', 'PDF', 'XLSX', 'JPEG', 'XLS', 'ZIP']
+    data_type_options = ['CSV', 'XLS', 'XLSX', 'PDF', 'JPEG', 'ZIP', 'TXT', 'SHP', 'JSON']
     data_type_menu = tk.OptionMenu(frame, data_type_var, *data_type_options)
     data_type_menu.grid(row=1, column=1, padx=5, pady=5, sticky='w')
 
@@ -268,148 +268,150 @@ def load_and_modify_csv(download_dir, file_name):
 #########################
 ######## メイン #########
 ########################
-"""
-取得可能データ属性
-データセットID,データセットタイトル,データセット説明,タグ, タグ（読み）,ライセンス,組織,事業説明等のページ,データ所管部署,データセット作成日時
-,データセット最終更新日時,更新頻度,カテ ゴリ（分類）,データタイトル,データURL,データ説明,形式,サイズ,並び順,データ作成日時,データ最終更新日時
+if __name__ == "__main__":
+    """
+    取得可能データ属性
+    データセットID,データセットタイトル,データセット説明,タグ, タグ（読み）,ライセンス,組織,事業説明等のページ,データ所管部署,データセット作成日時
+    ,データセット最終更新日時,更新頻度,カテ ゴリ（分類）,データタイトル,データURL,データ説明,形式,サイズ,並び順,データ作成日時,データ最終更新日時
 
-（出力例）
-okyo.lg.jp/seisaku/details/awareness_survey.html,スポーツ総合推進部パラスポーツ課,2024/04/19 11:34:38,2024/04/19 11:35:11,年次,生活
-,デフリンピックに期待すること,https://www.opendata.metro.tokyo.lg.jp/seikatubunka/Q32_dehurinpikkunikitaisurukoto.csv
-,上記の設問に係る単純集計表及びクロス集計表です。,CSV,39KB,39,2024/03/19 15:37:00,2024/03/19 15:37:00
+    （出力例）
+    okyo.lg.jp/seisaku/details/awareness_survey.html,スポーツ総合推進部パラスポーツ課,2024/04/19 11:34:38,2024/04/19 11:35:11,年次,生活
+    ,デフリンピックに期待すること,https://www.opendata.metro.tokyo.lg.jp/seikatubunka/Q32_dehurinpikkunikitaisurukoto.csv
+    ,上記の設問に係る単純集計表及びクロス集計表です。,CSV,39KB,39,2024/03/19 15:37:00,2024/03/19 15:37:00
 
-【検索例 未検証　エラー中：現在事務局に引数を問い合わせ中】
-https://catalog.data.metro.tokyo.lg.jp/dataset?q=title:データセットタイトル+AND+res_description:データセット説明文+AND+tags:タグ+AND+metadata_modified:[2024-09-20T00:00:0.000Z TO 2024-09-21T23:59:0.000Z]
-https://catalog.data.metro.tokyo.lg.jp/dataset?q=title:トイレ一覧+AND+res_description:トイレ
-"""
+    【検索例 未検証　エラー中：現在事務局に引数を問い合わせ中】
+    https://catalog.data.metro.tokyo.lg.jp/dataset?q=title:データセットタイトル+AND+res_description:データセット説明文+AND+tags:タグ+AND+metadata_modified:[2024-09-20T00:00:0.000Z TO 2024-09-21T23:59:0.000Z]
+    https://catalog.data.metro.tokyo.lg.jp/dataset?q=title:トイレ一覧+AND+res_description:トイレ
+    """
 
-try:
-    ######## データアドレス一覧取得 #########
-    # データセットタイトル
-    search, data_type , url = input_config()
-    print(f"search: {search}")
-    print(f"data_type: {data_type}")
-    print(f"url: {url}")
-    q = search
-    df = fetch_data_from_url(url, q, data_type)
-    if df is not None:
-        print(df)
-
-    ######## ダウンロードフォルダの作成 #########
-    # ディレクトリのパスを指定
-    directory_path = './data/'+ data_type
-    print (f"保存先ディレクトリ：{directory_path}")
-    # ディレクトリが存在する場合に削除
     try:
-        if os.path.exists(directory_path):
-            shutil.rmtree(directory_path)
-    except Exception as e:
-        print(f"ディレクトリの削除中にエラーが発生しました: {e}")
-    # ディレクトリが存在しない場合に作成
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
+        ######## データアドレス一覧取得 #########
+        # データセットタイトル
+        search, data_type , url = input_config()
+        print(f"search: {search}")
+        print(f"data_type: {data_type}")
+        print(f"url: {url}")
+        q = search
+        df = fetch_data_from_url(url, q, data_type)
+        if df is not None:
+            print(df)
 
-    ######## データアドレスを必要な属性のみ保存 #########
-    columns_to_select = ['データセットID','データURL','データセットタイトル']
-    file_path="./data/dataURLList.csv"
-    download_DataURL(df,columns_to_select,file_path)  
+        ######## ダウンロードフォルダの作成 #########
+        # ディレクトリのパスを指定
+        directory_path = './data/'+ data_type
+        print (f"保存先ディレクトリ：{directory_path}")
+        # ディレクトリが存在する場合に削除
+        try:
+            if os.path.exists(directory_path):
+                shutil.rmtree(directory_path)
+        except Exception as e:
+            print(f"ディレクトリの削除中にエラーが発生しました: {e}")
+        # ディレクトリが存在しない場合に作成
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
 
-    ######## 実際のデータをダウンロード #########
-    # ファイルの存在を確認
-    if os.path.exists(file_path):
-        # ダウンロードするファイルリストの記載されたCSVファイルを読み込む
-        data = pd.read_csv(file_path)
+        ######## データアドレスを必要な属性のみ保存 #########
+        columns_to_select = ['データセットID','データURL','データセットタイトル']
+        file_path="./data/dataURLList.csv"
+        download_DataURL(df,columns_to_select,file_path)  
 
-        # データURLが含まれている列を特定（ここでは'URL'という列名を仮定）
-        if 'データURL' in data.columns:
-            attribute_urls = data['データURL'].dropna().tolist()
+        ######## 実際のデータをダウンロード #########
+        # ファイルの存在を確認
+        if os.path.exists(file_path):
+            # ダウンロードするファイルリストの記載されたCSVファイルを読み込む
+            data = pd.read_csv(file_path)
+
+            # データURLが含まれている列を特定（ここでは'URL'という列名を仮定）
+            if 'データURL' in data.columns:
+                attribute_urls = data['データURL'].dropna().tolist()
+            else:
+                attribute_urls = []
+                print("CSVファイルに'URL'という列が見つかりません。")
+
+            ######## 各URLからデータをダウンロード ########
+            ######## 領域のクリア #########
+            download_dir = directory_path
+            #clean_work_folder(download_dir)
+
+            for url in attribute_urls:
+                try:
+                    #属性に緯度経度があればflag=1とする
+                    GISFlag=0
+                    response = requests.get(url)
+                    response.raise_for_status()  # ステータスコードがエラーの場合は例外を発生
+
+                    ######## コンテンツをファイルに保存（ダウンロード） #########
+                    file_name = get_safe_filename_from_url(url) #適切なファイル名を取得
+                    with open(f'{download_dir+'/'+file_name}', 'wb') as file:
+                        file.write(response.content)
+                    print(f"--------------------------ダウンロード完了: {download_dir+'/'+file_name}")
+
+                except requests.exceptions.RequestException as e:
+                    print(f"{url}のダウンロードに失敗しました: {e}")
         else:
-            attribute_urls = []
-            print("CSVファイルに'URL'という列が見つかりません。")
-
-        ######## 各URLからデータをダウンロード ########
-        ######## 領域のクリア #########
-        download_dir = directory_path
-        #clean_work_folder(download_dir)
-
-        for url in attribute_urls:
-            try:
-                #属性に緯度経度があればflag=1とする
-                GISFlag=0
-                response = requests.get(url)
-                response.raise_for_status()  # ステータスコードがエラーの場合は例外を発生
-
-                ######## コンテンツをファイルに保存（ダウンロード） #########
-                file_name = get_safe_filename_from_url(url) #適切なファイル名を取得
-                with open(f'{download_dir+'/'+file_name}', 'wb') as file:
-                    file.write(response.content)
-                print(f"--------------------------ダウンロード完了: {download_dir+'/'+file_name}")
-
-            except requests.exceptions.RequestException as e:
-                print(f"{url}のダウンロードに失敗しました: {e}")
-    else:
-        print(f"ファイルが見つかりません: {file_path}")
+            print(f"ファイルが見つかりません: {file_path}")
 
 
-    ######## XLSデータの場合の処理 #########
-    if data_type == 'XLS':
-        input_directory = directory_path
-        output_directory = './data/csv'
-        xls2csv.process_excels_in_batches(input_directory, output_directory)
-        data_type = 'CSV'
+        ######## XLSデータの場合の処理 #########
+        if data_type == 'XLS':
+            input_directory = directory_path
+            output_directory = './data/csv'
+            xls2csv.process_excels_in_batches(input_directory, output_directory)
+        #CSV変換したものをさらにCSV処理を実行
+        #    data_type = 'CSV'
 
-    ######## CSVデータの場合の処理 #########
-    if data_type == 'CSV':
-        ######## CSVのデータコンバート #########
-        input_directory = './data/'+ data_type
-        output_directory = './data/csv_convert'
-        csv_convert.process_csv_files(input_directory, output_directory)
-        ######## すべてのファイルをマージするかどうかの判断 #########
-        # 確認ダイアログを表示
-        title = "GIS_CSVのマージ・GPKGの作成"
-        message = "データによっては非常に所持時間が必要ですがよろしいですか。"
-        user_response = show_confirmation_dialog(title, message)
+        ######## CSVデータの場合の処理 #########
+        if data_type == 'CSV':
+            ######## CSVのデータコンバート #########
+            input_directory = './data/'+ data_type
+            output_directory = './data/CSV_convert'
+            csv_convert.process_csv_files(input_directory, output_directory)
+            ######## すべてのファイルをマージするかどうかの判断 #########
+            # 確認ダイアログを表示
+            title = "GIS_CSVのマージ・GPKGの作成"
+            message = "データによっては非常に所持時間が必要ですがよろしいですか。"
+            user_response = show_confirmation_dialog(title, message)
 
-        # ユーザーの応答に基づいて処理を行う
-        if user_response:
-            # 「はい」が選択された場合の処理
-            ######## すべてのファイルをマージする #########
-            # マージする’CSVファイルを格納するリスト
-            csv_files = []
-            
-            # ディレクトリ内のファイルを取得
-            for filename in os.listdir(directory_path):
-                if filename.startswith('GIS_') and filename.endswith('.csv'):
-                    csv_files.append(os.path.join(directory_path, filename))
+            # ユーザーの応答に基づいて処理を行う
+            if user_response:
+                # 「はい」が選択された場合の処理
+                ######## すべてのファイルをマージする #########
+                # マージする’CSVファイルを格納するリスト
+                csv_files = []
+                
+                # ディレクトリ内のファイルを取得
+                for filename in os.listdir(directory_path):
+                    if filename.startswith('GIS_') and filename.endswith('.csv'):
+                        csv_files.append(os.path.join(directory_path, filename))
 
-            # CSVファイルを読み込み、データフレームをリストに追加
-            dataframes = [pd.read_csv(csv_file, low_memory=False) for csv_file in csv_files]
+                # CSVファイルを読み込み、データフレームをリストに追加
+                dataframes = [pd.read_csv(csv_file, low_memory=False) for csv_file in csv_files]
 
-            # データフレームをマージ
-            merged_df = pd.concat(dataframes, ignore_index=True)
+                # データフレームをマージ
+                merged_df = pd.concat(dataframes, ignore_index=True)
 
-            # マージしたデータをCSVファイルとして保存
-            merged_csv_path = "./GIS_merge_csv.csv"
-            merged_df.to_csv(merged_csv_path, index=False)
+                # マージしたデータをCSVファイルとして保存
+                merged_csv_path = "./data/GIS_merge_csv.csv"
+                merged_df.to_csv(merged_csv_path, index=False)
 
-            # '緯度'を数値に変換し、エラーをNaNに変換
-            merged_df['緯度'] = pd.to_numeric(merged_df['緯度'], errors='coerce')
+                # '緯度'を数値に変換し、エラーをNaNに変換
+                merged_df['緯度'] = pd.to_numeric(merged_df['緯度'], errors='coerce')
 
-            # '緯度'がNaNの行を削除
-            filtered_df = merged_df.dropna(subset=['緯度'])
+                # '緯度'がNaNの行を削除
+                filtered_df = merged_df.dropna(subset=['緯度'])
 
-            # 'geometry'列を作成
-            filtered_df['geometry'] = filtered_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
+                # 'geometry'列を作成
+                filtered_df['geometry'] = filtered_df.apply(lambda row: Point(row['経度'], row['緯度']), axis=1)
 
-            # GeoDataFrameに変換
-            gdf = gpd.GeoDataFrame(filtered_df, geometry='geometry', crs='EPSG:4326')
+                # GeoDataFrameに変換
+                gdf = gpd.GeoDataFrame(filtered_df, geometry='geometry', crs='EPSG:4326')
 
-            # GPKGファイルとして保存
-            gpkg_path = "./GIS_merge.gpkg"
-            gdf.to_file(gpkg_path, driver='GPKG')
+                # GPKGファイルとして保存
+                gpkg_path = "./data/GIS_merge.gpkg"
+                gdf.to_file(gpkg_path, driver='GPKG')
 
-# エラー処理
-except FileNotFoundError:
-    print(f"ファイルが見つかりません。")
-except Exception as e:
-    print(f"エラーが発生しました: {e}")
+    # エラー処理
+    except FileNotFoundError:
+        print(f"ファイルが見つかりません。")
+    except Exception as e:
+        print(f"エラーが発生しました: {e}")
